@@ -1,0 +1,10 @@
+{
+  "serverPort": 3000,
+  "PATH_TO_METHODS": "/modules/api/methods/",
+  "db" : {
+    "host" : "localhost",
+    "dbname" : "aibot",
+    "user" : "wayne",
+    "password" : "wayne"
+  }
+}
