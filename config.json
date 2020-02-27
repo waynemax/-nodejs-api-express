@@ -1,14 +1,14 @@
 {
   "serverPort": 3002,
   "PATH_TO_METHODS": "/modules/api/methods/",
-  "vk_group_id": 0, //vk group id
+  "vk_group_id": 0,
   "tokens": {
-    "callback_string": "", // vk: строка, которую должен вернуть сервер
-    "aibot": "", // vk group access token
-    "aibot_secret": "" // vk: group secret api key
+    "callback_string": "",
+    "aibot": "",
+    "aibot_secret": ""
   },
   "db" : {
-    "host" : "localhost",
+    "host" : "",
     "dbname" : "",
     "user" : "",
     "password" : ""
