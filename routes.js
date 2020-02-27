@@ -74,6 +74,17 @@ module.exports = { routes: {
                         }
                     },
                 }
+            },
+            callback: {
+                versions: [1.1],
+                methods: {
+                    aibot: {
+                        description: undefined,
+                        have_auth: false,
+                        middleware: [],
+                        params: {}
+                    },
+                }
             }
         }
     } };

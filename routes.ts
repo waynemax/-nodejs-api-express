@@ -111,6 +111,17 @@ module.exports = { routes: <IRoutes> {
           }
         },
       }
+    },
+    callback: <IModule> {
+      versions: [1.1],
+      methods: {
+        aibot: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {}
+        },
+      }
     }
   }
 }};

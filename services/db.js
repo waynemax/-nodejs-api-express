@@ -14,7 +14,7 @@ const pool = mysql.createPool({
 module.exports.query = function(query, callback) {
   pool.getConnection(function(err, connection) {
     if (err) {
-      console.log('err', connection)
+      console.log('errdb:', connection)
       //connection.release();
       throw err;
     }

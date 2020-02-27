@@ -1,4 +1,5 @@
 const {_err, _response} = require('../../../services/functions');
+const config = require('../../../config');
 
 class BaseMethod {
   constructor(props) {
@@ -36,6 +37,20 @@ class BaseMethod {
       _response(data)
     );
   };
+
+  execute() {
+
+  }
+
+  vkCallbackInit() {
+    const vk = new require('VK-Promise')(config.tokens.aibot);
+    vk.init_callback_api(
+      config.tokens.callback_string,
+      config.tokens.aibot_secret, {group: config.vk_group_id
+      })(this.req, this.res);
+    vk.init_execute_cart(50);
+    return vk;
+  }
 }
 
 module.exports = {BaseMethod};

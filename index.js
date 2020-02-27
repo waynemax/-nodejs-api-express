@@ -19,8 +19,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get(PATH_SEPARATOR, (req, res) => {
-  res.send('hello');
+app.all(PATH_SEPARATOR, (req, res) => {
+  res.status(200).end("OK");
 });
 
 const treatment = (req, res) => {
@@ -213,6 +213,10 @@ app.route('/api/:v/:methodName?').all(treatment);
 
 app.route('/schema').get((req, res) => {
   res.send(routes);
+});
+
+process.on('uncaughtException', function (e) {
+  console.error('uncaughtException', e);
 });
 
 const server = app.listen(config.serverPort, () => {
