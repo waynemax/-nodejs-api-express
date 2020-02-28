@@ -1,35 +1,64 @@
 module.exports = { routes: {
         allVersions: [1.1, 1.2],
         modules: {
-            questions: {
+            storage: {
                 versions: [1.1],
                 methods: {
                     add: {
                         description: undefined,
                         have_auth: false,
-                        middleware: [
-                            'auth/1.1'
-                        ],
+                        middleware: [],
                         params: {
-                            text: {
+                            request_key: {
                                 type: 'string',
                                 required: true,
-                                oneOf: ['from_id', 'else'],
-                                minLength: 6,
-                                maxLength: 50,
+                                minLength: 1,
                             },
-                            from_id: {
-                                type: 'number',
+                            response_value: {
+                                type: 'string',
                                 required: true,
-                                oneOf: ['text', 'else'],
-                                diapason: [2, 80]
                             },
-                            else: {
+                            client_id: {
                                 type: 'number',
                                 required: false,
-                            }
+                            },
                         }
-                    }
+                    },
+                    get: {
+                        description: undefined,
+                        have_auth: false,
+                        middleware: [],
+                        params: {
+                            request_key: {
+                                type: 'string',
+                                required: true,
+                                minLength: 1,
+                            },
+                            client_id: {
+                                type: 'number',
+                                required: false,
+                            },
+                        }
+                    },
+                    remove: {
+                        description: undefined,
+                        have_auth: false,
+                        middleware: [],
+                        params: {
+                            request_key: {
+                                type: 'string',
+                                required: true,
+                            },
+                            response_value: {
+                                type: 'string',
+                                required: true,
+                            },
+                            client_id: {
+                                type: 'number',
+                                required: false,
+                            },
+                        }
+                    },
                 }
             },
             auth: {
@@ -70,6 +99,11 @@ module.exports = { routes: {
                                 type: 'string',
                                 required: true,
                                 test: /^[а-яеА-Яa-z 0-9]+$/iu,
+                            },
+                            gender: {
+                                type: 'string',
+                                required: true,
+                                pickOf: ['man', 'female', 2]
                             }
                         }
                     },
@@ -81,7 +115,8 @@ module.exports = { routes: {
                     aibot: {
                         description: undefined,
                         have_auth: false,
-                        middleware: [],
+                        middleware: ['storage/1.1'],
+                        only: 'POST',
                         params: {}
                     },
                 }

@@ -18,8 +18,11 @@ interface IMethod {
   description: string | undefined,
   params: IParams,
   have_auth: boolean,
+  only?: 'GET' | 'POST',
   middleware: string[],
 }
+
+type pickOf = any[];
 
 interface IParam {
   type: 'string' | 'any' | 'number',
@@ -28,45 +31,75 @@ interface IParam {
   minLength?: number,
   maxLength?: number,
   diapason?: undefined | [number, number],
-  test?: any
+  test?: any,
+  pickOf?: string[] | number[]
 }
 
 interface IParams {
-  [key: string]: IParam,
+  [key: string]: IParam
 }
 
 module.exports = { routes: <IRoutes> {
   allVersions: [1.1, 1.2],
   modules: <IModules> {
-    questions: <IModule> {
+    storage: <IModule> {
       versions: [1.1],
       methods: {
         add: <IMethod> {
           description: undefined,
           have_auth: false,
-          middleware: [
-            'auth/1.1'
-          ],
+          middleware: [],
           params: <IParams> {
-            text: {
+            request_key: {
               type: 'string',
               required: true,
-              oneOf: ['from_id', 'else'],
-              minLength: 6,
-              maxLength: 50,
+              minLength: 1,
             },
-            from_id: {
-              type: 'number',
+            response_value: {
+              type: 'string',
               required: true,
-              oneOf: ['text', 'else'],
-              diapason: [2, 80]
             },
-            else: {
+            client_id: {
               type: 'number',
               required: false,
-            }
+            },
           }
-        }
+        },
+        get: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {
+            request_key: {
+              type: 'string',
+              required: true,
+              minLength: 1,
+            },
+            client_id: {
+              type: 'number',
+              required: false,
+            },
+          }
+        },
+        remove: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {
+            request_key: {
+              type: 'string',
+              required: true,
+            },
+            response_value: {
+              type: 'string',
+              required: true,
+            },
+            client_id: {
+              type: 'number',
+              required: false,
+            },
+          }
+        },
       }
     },
     auth: <IModule> {
@@ -107,6 +140,11 @@ module.exports = { routes: <IRoutes> {
               type: 'string',
               required: true,
               test: /^[а-яеА-Яa-z 0-9]+$/iu,
+            },
+            gender: {
+              type: 'string',
+              required: true,
+              pickOf: ['man', 'female', 2]
             }
           }
         },
@@ -118,7 +156,8 @@ module.exports = { routes: <IRoutes> {
         aibot: <IMethod> {
           description: undefined,
           have_auth: false,
-          middleware: [],
+          middleware: ['storage/1.1'],
+          only: 'POST',
           params: <IParams> {}
         },
       }

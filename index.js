@@ -1,3 +1,5 @@
+require('events').EventEmitter.defaultMaxListeners = 100;
+
 const express = require('express');
 const config = require('./config.json');
 const app = express();
@@ -5,7 +7,6 @@ const db = require('./services/db');
 const fs = require('fs');
 const routes = require(__dirname + '/routes').routes;
 const {_err} = require(__dirname + '/services/functions');
-
 const {ERRORS} = require(__dirname + '/services/errors');
 const OK = 200;
 const FAIL = 500;
@@ -65,6 +66,16 @@ const treatment = (req, res) => {
   }
 
   const docParams = routesModule.methods[method].params;
+  if (routesModule.methods[method].hasOwnProperty('only')) {
+    if (routesModule.methods[method].only !== req.method) {
+      return res.status(OK).send(
+        _err(
+          ERRORS.ONLY_METHOD.code,
+          `Only ${routesModule.methods[method].only} requests are supported`
+        )
+      );
+    }
+  }
   const inParams = req.query;
 
   for (let param in docParams) {
@@ -100,12 +111,14 @@ const treatment = (req, res) => {
         inParams[param] = Number(inParams[param]);
       }
     }
+
     if (docParams[param].type !== 'any' && docParams[param].type !== typeof inParams[param]) {
       return res.status(OK).send(_err(
         ERRORS.PARAM_WRONG_TYPE.code,
         `param ${param + '(' + typeof inParams[param]}) !== need type ${docParams[param].type}`
       ));
     }
+
     if (docParams[param].type === typeof 1 && docParams[param].hasOwnProperty('diapason')) {
       const diapason = docParams[param].diapason;
       if ((inParams[param] < diapason[0]) || (inParams[param] > diapason[1])) {
@@ -153,6 +166,22 @@ const treatment = (req, res) => {
         }
       }
     }
+
+    if (docParams[param].hasOwnProperty('pickOf')) {
+      if (inParams.hasOwnProperty(param)) {
+        if (typeof inParams[param] === 'string') {
+          if (isFinite(inParams[param])) {
+            inParams[param] = Number(inParams[param]);
+          }
+        }
+        if (docParams[param].pickOf.indexOf(inParams[param]) < 0) {
+          return res.status(OK).send(_err(
+            ERRORS.PARAM_PICK_OF_TEST_FAIL.code,
+            `parameter failed selection test; pick of: ` + JSON.stringify(docParams[param].pickOf)
+          ));
+        }
+      }
+    }
   }
 
   const Module = require(PATH + PATH_SEPARATOR + (req.params.v) + PATH_SEPARATOR + module)[
@@ -178,7 +207,7 @@ const treatment = (req, res) => {
   }
 
   return new Module(
-    {req, res, db, middleware, route: routesModule.methods[method]}
+    {req, res, db, middleware, method, route: routesModule.methods[method]}
   ).execute();
 };
 

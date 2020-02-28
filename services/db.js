@@ -11,24 +11,24 @@ const pool = mysql.createPool({
   charset			: "utf8mb4"
 });
 
-module.exports.query = function(query, callback) {
+module.exports.query = function(query, params, callback) {
   pool.getConnection(function(err, connection) {
     if (err) {
-      console.log('errdb:', connection)
+      console.error('errdb:', connection);
       //connection.release();
       throw err;
     }
-    connection.query(query, function(err, rows) {
+    connection.query(query, params, function(err, rows) {
       connection.release();
-      if(!err) {
+      if (!err) {
         callback(null, {rows});
       }
     });
     connection.on('error', function(err) {
       throw err;
-      return;
     });
   });
 };
+
 
 module.exports.pool = pool;

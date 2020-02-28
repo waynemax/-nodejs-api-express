@@ -128,6 +128,7 @@ logs
 yarn.lock
 
 node_modules
+idea
 bower_components
 
 *.sublime*

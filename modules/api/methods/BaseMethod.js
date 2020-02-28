@@ -8,6 +8,7 @@ class BaseMethod {
       this.res = props.res;
       this.middleware = props.middleware;
       this.db = props.db;
+      this.method = props.method;
       this.route = props.route;
     }
   }
@@ -18,8 +19,16 @@ class BaseMethod {
       res: this.res,
       db: this.db,
       middleware: {},
-      route: this.route
+      route: this.route,
+      method: this.method,
     };
+  }
+
+  $_GET(key) {
+    if (key) {
+      return this.req.query[key];
+    }
+    return this.req.query;
   }
 
   error(code = '', message = '', status = 200) {
@@ -28,8 +37,8 @@ class BaseMethod {
     );
   };
 
-  query(query = '', callback = (err, res) => {}) {
-    this.db.query(query, callback);
+  query(query = '', params, callback = (err, res) => {}) {
+    this.db.query(query, params, callback);
   };
 
   response(data = {}) {
@@ -38,9 +47,7 @@ class BaseMethod {
     );
   };
 
-  execute() {
-
-  }
+  execute() {}
 
   vkCallbackInit() {
     const vk = new require('VK-Promise')(config.tokens.aibot);
