@@ -1,7 +1,7 @@
 {
   "serverPort": 3002,
   "PATH_TO_METHODS": "/modules/api/methods/",
-  "vk_group_id": 1,
+  "vk_group_id": 0,
   "tokens": {
     "callback_string": "",
     "aibot": "",

@@ -1,11 +1,13 @@
 require('events').EventEmitter.defaultMaxListeners = 100;
 
 const express = require('express');
+const bodyParser = require('body-parser');
 const config = require('./config.json');
 const app = express();
 const db = require('./services/db');
 const fs = require('fs');
 const routes = require(__dirname + '/routes').routes;
+const {wcrypt_decode, wcrypt_encode} = require('./services/wcrypt');
 const {_err} = require(__dirname + '/services/functions');
 const {ERRORS} = require(__dirname + '/services/errors');
 const OK = 200;
@@ -20,8 +22,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({
+//   extended: true
+// }));
+
 app.all(PATH_SEPARATOR, (req, res) => {
-  res.status(200).end("OK");
+  res.status(200).end('OK');
 });
 
 const treatment = (req, res) => {
@@ -112,11 +119,24 @@ const treatment = (req, res) => {
       }
     }
 
-    if (docParams[param].type !== 'any' && docParams[param].type !== typeof inParams[param]) {
+    if (['stringArray', 'any'].indexOf(docParams[param].type) === -1 && docParams[param].type !== typeof inParams[param]) {
       return res.status(OK).send(_err(
         ERRORS.PARAM_WRONG_TYPE.code,
         `param ${param + '(' + typeof inParams[param]}) !== need type ${docParams[param].type}`
       ));
+    }
+
+    if (docParams[param].type === 'stringArray') {
+      inParams[param] = safe_tags_replace(inParams[param]);
+      const explode = inParams[param].split(',');
+      explode.forEach((item, key) => {
+        if (explode[key].length < 1) {
+          return res.status(OK).send(_err(
+            ERRORS.PARAM_WRONG_TYPE.code,
+            ERRORS.PARAM_WRONG_TYPE.message,
+          ));
+        }
+      });
     }
 
     if (docParams[param].type === typeof 1 && docParams[param].hasOwnProperty('diapason')) {
@@ -130,16 +150,6 @@ const treatment = (req, res) => {
     }
 
     if (docParams[param].type === typeof '') {
-      const tagsToReplace = {'&': '&amp;', '<': '&lt;', '>': '&gt;'};
-
-      function replaceTag(tag) {
-        return tagsToReplace[tag] || tag;
-      }
-
-      function safe_tags_replace(str) {
-        return str.replace(/[&<>]/g, replaceTag);
-      }
-
       inParams[param] = safe_tags_replace(inParams[param]);
       if (docParams[param].hasOwnProperty('minLength')) {
         if (inParams[param].length < docParams[param].minLength) {
@@ -155,6 +165,11 @@ const treatment = (req, res) => {
             ERRORS.PARAM_TOO_LONG.code,
             `param ${param} must be shorter than ${docParams[param].maxLength} characters`
           ));
+        }
+      }
+      if (docParams[param].hasOwnProperty('wcrypted')) {
+        if (inParams[param]) {
+          inParams[param] = wcrypt_decode(inParams[param]);
         }
       }
       if (docParams[param].hasOwnProperty('test')) {
@@ -247,6 +262,16 @@ app.route('/schema').get((req, res) => {
 process.on('uncaughtException', function (e) {
   console.error('uncaughtException', e);
 });
+
+const tagsToReplace = {'&': '&amp;', '<': '&lt;', '>': '&gt;'};
+
+function replaceTag(tag) {
+  return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+  return str.replace(/[&<>]/g, replaceTag);
+}
 
 const server = app.listen(config.serverPort, () => {
   console.log('listening on port ' + config.serverPort)

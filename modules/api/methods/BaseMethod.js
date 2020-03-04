@@ -51,6 +51,7 @@ class BaseMethod {
 
   vkCallbackInit() {
     const vk = new require('VK-Promise')(config.tokens.aibot);
+    console.log('x', config.tokens.aibot);
     vk.init_callback_api(
       config.tokens.callback_string,
       config.tokens.aibot_secret, {group: config.vk_group_id

@@ -30,7 +30,7 @@ module.exports = { routes: {
                         middleware: [],
                         params: {
                             request_key: {
-                                type: 'string',
+                                type: 'stringArray',
                                 required: true,
                                 minLength: 1,
                             },
@@ -73,7 +73,8 @@ module.exports = { routes: {
                                 type: 'string',
                                 required: true,
                                 test: /^[a-zA-Z0-9]{3,15}$/,
-                                oneOf: ['login', 'phone', 'email']
+                                oneOf: ['login', 'phone', 'email'],
+                                wcrypted: true
                             },
                             phone: {
                                 type: 'string',

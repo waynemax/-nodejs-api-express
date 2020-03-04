@@ -25,14 +25,15 @@ interface IMethod {
 type pickOf = any[];
 
 interface IParam {
-  type: 'string' | 'any' | 'number',
+  type: 'string' | 'any' | 'number' | 'stringArray',
   required: boolean,
   oneOf?: string[],
   minLength?: number,
   maxLength?: number,
   diapason?: undefined | [number, number],
   test?: any,
-  pickOf?: string[] | number[]
+  pickOf?: string[] | number[],
+  wcrypted?: boolean,
 }
 
 interface IParams {
@@ -71,7 +72,7 @@ module.exports = { routes: <IRoutes> {
           middleware: [],
           params: <IParams> {
             request_key: {
-              type: 'string',
+              type: 'stringArray',
               required: true,
               minLength: 1,
             },
@@ -114,7 +115,8 @@ module.exports = { routes: <IRoutes> {
               type: 'string',
               required: true,
               test: /^[a-zA-Z0-9]{3,15}$/,
-              oneOf: ['login', 'phone', 'email']
+              oneOf: ['login', 'phone', 'email'],
+              wcrypted: true
             },
             phone: {
               type: 'string',
