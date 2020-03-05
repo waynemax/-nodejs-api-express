@@ -11,5 +11,9 @@ module.exports.ERRORS = {
   PARAM_TOO_LONG: {code: 'PARAM_TOO_LONG', message: 'Param must be shorten'},
   PARAM_TOO_SHORT: {code: 'PARAM_TOO_SHORT', message: 'Param must be longer...'},
   REG_EXP_ERROR: {code: 'REG_EXP_ERROR', message: 'Param failed test'},
-  MIDDLEWARE_ERROR: {code: 'MIDDLEWARE_ERROR', message: 'Error middleware'},
+  NOT_MD5: {code: 'NOT_MD5', message: 'Expected md5'},
+  UNKNOWN: {code: 'UNKNOWN', message: 'Unknown error'},
+  SAME_LOGIN: {code: 'SAME_LOGIN', message: 'This login already exists'},
+  API_CONNECT_ERROR: {code: 'API_CONNECT_ERROR', message: 'API_CONNECT_ERROR'},
+  PERMISSION_DENIED: {code: 'PERMISSION_DENIED', message: 'Auth data incorrect'},
 };

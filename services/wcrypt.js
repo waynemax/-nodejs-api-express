@@ -96,7 +96,7 @@ function wcrypt_encode(str) {
     key += pattern.substr(z, 1);
     array.push(pattern.substr(z, 1))
   }
-  md = {'key': key,'array': array};
+  md = {'key': key, 'array': array};
   for (i = 0; i < str.length; i++) {
     res += str_replace(
       ['0000','000','00','.','0101','1111','111'],

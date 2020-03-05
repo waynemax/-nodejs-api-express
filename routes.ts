@@ -34,6 +34,7 @@ interface IParam {
   test?: any,
   pickOf?: string[] | number[],
   wcrypted?: boolean,
+  md5?: boolean,
 }
 
 interface IParams {
@@ -106,17 +107,37 @@ module.exports = { routes: <IRoutes> {
     auth: <IModule> {
       versions: [1.1],
       methods: {
-        get: <IMethod> {
+        sign_up: <IMethod> {
           description: undefined,
           have_auth: false,
           middleware: [],
           params: <IParams> {
+            client_id: {
+              type: 'number',
+              required: true,
+            },
+            client_secret: {
+              type: 'string',
+              required: true,
+              wcrypted: true
+            },
+            first_name: {
+              type: 'string',
+              required: false,
+              test: /^[а-яеА-Яa-z 0-9]+$/iu,
+            },
+            last_name: {
+              type: 'string',
+              required: false,
+              test: /^[а-яеА-Яa-z 0-9]+$/iu,
+            },
             login: {
               type: 'string',
               required: true,
-              test: /^[a-zA-Z0-9]{3,15}$/,
+              test: /^[a-zA-Z0-9]{3,25}$/,
               oneOf: ['login', 'phone', 'email'],
-              wcrypted: true
+              maxLength: 25,
+              minLength: 3
             },
             phone: {
               type: 'string',
@@ -130,23 +151,113 @@ module.exports = { routes: <IRoutes> {
               required: true,
               test: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
               oneOf: ['login', 'phone', 'email']
+            },
+            password: {
+              type: 'string',
+              required: true,
+              wcrypted: true,
+              md5: true,
+            },
+            gender: {
+              type: 'number',
+              required: false,
+              diapason: [0, 2]
+            },
+            patronymic: {
+              type: 'string',
+              required: false
             }
           }
         },
-        sign_up: <IMethod> {
+        get: <IMethod> {
           description: undefined,
           have_auth: false,
           middleware: [],
           params: <IParams> {
-            first_name: {
+            login: {
               type: 'string',
               required: true,
-              test: /^[а-яеА-Яa-z 0-9]+$/iu,
+              test: /^[a-zA-Z0-9]{3,25}$/,
+              oneOf: ['login', 'phone', 'email'],
+              maxLength: 25,
+              minLength: 3
             },
-            gender: {
+            phone: {
               type: 'string',
               required: true,
-              pickOf: ['man', 'female', 2]
+              test: /^\d+$/,
+              oneOf: ['login', 'phone', 'email'],
+              minLength: 6,
+            },
+            email: {
+              type: 'string',
+              required: true,
+              test: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              oneOf: ['login', 'phone', 'email']
+            },
+            client_secret: {
+              type: 'string',
+              required: true,
+              wcrypted: true
+            },
+            type: {
+              type: 'string',
+              required: true,
+              pickOf: ['remote_login'],
+            },
+            password: {
+              type: 'string',
+              required: true,
+              wcrypted: true,
+              md5: true,
+            },
+          }
+        },
+        relevance: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {
+            access_token: {
+              type: 'string',
+              required: true,
+            }
+          }
+        },
+        refresh: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {
+            access_token: {
+              type: 'string',
+              required: true,
+            },
+            refresh_token: {
+              type: 'string',
+              required: true,
+            }
+          }
+        },
+        remove: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {
+            access_token: {
+              type: 'string',
+              required: true,
+            }
+          }
+        },
+        removeAll: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: [],
+          params: <IParams> {
+            access_token: {
+              type: 'string',
+              required: true,
             }
           }
         },

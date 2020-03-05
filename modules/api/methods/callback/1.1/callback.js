@@ -39,9 +39,7 @@ class Callback extends (require('../../BaseMethod').BaseMethod) {
     const vk = this.vkCallbackInit();
     const _this = this;
     this.res.end('OK');
-    console.log('1')
     vk.on('message', function onMessage(event, msg) {
-      console.log('словил мсг')
       vk.users.get({
         user_id: msg.user_id
       }).then(res => {

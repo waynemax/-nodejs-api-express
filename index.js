@@ -1,4 +1,5 @@
 require('events').EventEmitter.defaultMaxListeners = 100;
+require(__dirname + '/services/mc.js');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -6,14 +7,23 @@ const config = require('./config.json');
 const app = express();
 const db = require('./services/db');
 const fs = require('fs');
+const Fingerprint = require('express-fingerprint');
 const routes = require(__dirname + '/routes').routes;
-const {wcrypt_decode, wcrypt_encode} = require('./services/wcrypt');
 const {_err} = require(__dirname + '/services/functions');
 const {ERRORS} = require(__dirname + '/services/errors');
 const OK = 200;
 const FAIL = 500;
 const PATH_SEPARATOR = '/';
 const ROUTE_SEPARATOR = '.';
+
+
+app.use(Fingerprint({
+  parameters:[
+    Fingerprint.useragent,
+    Fingerprint.acceptHeaders,
+    Fingerprint.geoip
+  ]
+}));
 
 app.disable('x-powered-by');
 
@@ -169,6 +179,7 @@ const treatment = (req, res) => {
       }
       if (docParams[param].hasOwnProperty('wcrypted')) {
         if (inParams[param]) {
+          const {wcrypt_decode} = require('./services/wcrypt');
           inParams[param] = wcrypt_decode(inParams[param]);
         }
       }
@@ -178,6 +189,17 @@ const treatment = (req, res) => {
             ERRORS.REG_EXP_ERROR.code,
             `param ${param} failed test`
           ));
+        }
+      }
+
+      if (docParams[param].hasOwnProperty('md5')) {
+        if (inParams[param]) {
+          if (inParams[param].length !== 32) {
+            return res.status(OK).send(_err(
+              ERRORS.NOT_MD5.code,
+              ERRORS.NOT_MD5.message
+            ));
+          }
         }
       }
     }
