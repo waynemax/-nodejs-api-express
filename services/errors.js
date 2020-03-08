@@ -16,4 +16,6 @@ module.exports.ERRORS = {
   SAME_LOGIN: {code: 'SAME_LOGIN', message: 'This login already exists'},
   API_CONNECT_ERROR: {code: 'API_CONNECT_ERROR', message: 'API_CONNECT_ERROR'},
   PERMISSION_DENIED: {code: 'PERMISSION_DENIED', message: 'Auth data incorrect'},
+  NEED_AUTH: {code: 'NEED_AUTH', message: 'Need auth'},
+  IS_NOT_POSITIVE_NUMBER: {code: 'IS_NOT_POSITIVE_NUMBER', message: 'Param must be positive (x > 0)'},
 };

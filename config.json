@@ -1,7 +1,8 @@
 {
   "serverPort": 3002,
   "PATH_TO_METHODS": "/modules/api/methods/",
-  "token_valid": 300,
+  "token_valid": 3600,
+  "onlineTime": 300,
   "vk_group_id": 0,
   "tokens": {
     "callback_string": "",

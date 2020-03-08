@@ -13,6 +13,10 @@ function responseBuilder(data = {}, errors = []) {
   return response;
 }
 
+ts = () => {
+  return parseInt( ( +new Date/1000 ).toFixed( 0 ) );
+};
+
 function _err(code, text) {
   return JSON.stringify(responseBuilder({}, [{
     code, text
@@ -44,5 +48,6 @@ module.exports = {
   responseBuilder,
   _err,
   _response,
-  rand
+  rand,
+  ts
 };

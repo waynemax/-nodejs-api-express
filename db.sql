@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 4.9.3
--- https://www.phpmyadmin.net/
---
--- Host: localhost:3306
--- Generation Time: Mar 06, 2020 at 12:23 AM
--- Server version: 5.7.26
--- PHP Version: 7.4.1
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
@@ -29,7 +20,7 @@ CREATE TABLE `apps_clients` (
   `create_date` int(11) NOT NULL,
   `expires_time` int(11) NOT NULL COMMENT '0 - unlimited',
   `deactivated` smallint(1) NOT NULL,
-  `role` smallint(1) NOT NULL COMMENT ' '
+  `role` smallint(1) NOT NULL COMMENT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -90,7 +81,9 @@ CREATE TABLE `users` (
   `reg_date` int(11) NOT NULL,
   `full_name` varchar(128) CHARACTER SET utf8mb4 NOT NULL,
   `photo` varchar(64) NOT NULL,
-  `gender` int(1) NOT NULL
+  `gender` int(1) NOT NULL,
+  `is_closed` tinyint(1) NOT NULL,
+  `secret_phrase` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --

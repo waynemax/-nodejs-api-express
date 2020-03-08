@@ -35,6 +35,8 @@ interface IParam {
   pickOf?: string[] | number[],
   wcrypted?: boolean,
   md5?: boolean,
+  fields?: string[],
+  positive?: boolean
 }
 
 interface IParams {
@@ -64,6 +66,7 @@ module.exports = { routes: <IRoutes> {
             client_id: {
               type: 'number',
               required: false,
+              positive: true,
             },
           }
         },
@@ -80,6 +83,7 @@ module.exports = { routes: <IRoutes> {
             client_id: {
               type: 'number',
               required: false,
+              positive: true,
             },
           }
         },
@@ -99,9 +103,101 @@ module.exports = { routes: <IRoutes> {
             client_id: {
               type: 'number',
               required: false,
+              positive: true,
             },
           }
         },
+      }
+    },
+    users: <IModule> {
+      versions: [1.1],
+      methods: {
+        get: <IMethod> {
+          description: undefined,
+          have_auth: true,
+          middleware: [],
+          params: <IParams> {
+            user_ids: {
+              type: 'stringArray',
+              required: true,
+              oneOf: ['query', 'user_ids'],
+            },
+            query: {
+              type: 'string',
+              required: true,
+              oneOf: ['query', 'user_ids'],
+            },
+            name_case: {
+              type: 'string',
+              required: false,
+              pickOf: ['nom', 'gen', 'dat', 'acc', 'ins', 'abl']
+            },
+            online: {
+              type: 'number',
+              required: false,
+              diapason: [0, 1]
+            },
+            fields: {
+              type: 'stringArray',
+              required: true,
+              fields: ['first_name', 'last_name', 'patronymic', 'deactivated', 'last_seen', 'verified', 'full_name', 'photo', 'gender'],
+            },
+            cursor: {
+              type: 'number',
+              required: false,
+              positive: true,
+            },
+            count: {
+              type: 'number',
+              required: false,
+              positive: true,
+              diapason: [1, 100]
+            }
+          }
+        },
+      }
+    },
+    account: <IModule> {
+      versions: [1.1],
+      methods: {
+        setOnline: <IMethod> {
+          description: undefined,
+          have_auth: true,
+          middleware: [],
+          params: <IParams> {}
+        },
+        setProfileIsClosed: <IMethod> {
+          description: undefined,
+          have_auth: true,
+          middleware: [],
+          params: <IParams> {
+            status: {
+              type: 'number',
+              required: true,
+              diapason: [0, 1]
+            },
+          }
+        },
+        changePassword: <IMethod> {
+          description: undefined,
+          have_auth: true,
+          middleware: [],
+          params: <IParams> {
+            new_password: {
+              type: 'string',
+              required: true,
+              wcrypted: true,
+              md5: true,
+            },
+            secret_phrase: {
+              type: 'string',
+              required: true,
+              wcrypted: true,
+              md5: true,
+              minLength: 2
+            },
+          }
+        }
       }
     },
     auth: <IModule> {
@@ -115,6 +211,7 @@ module.exports = { routes: <IRoutes> {
             client_id: {
               type: 'number',
               required: true,
+              positive: true,
             },
             client_secret: {
               type: 'string',
@@ -158,10 +255,17 @@ module.exports = { routes: <IRoutes> {
               wcrypted: true,
               md5: true,
             },
+            secret_phrase: {
+              type: 'string',
+              required: true,
+              wcrypted: true,
+              md5: true,
+              minLength: 2
+            },
             gender: {
               type: 'number',
               required: false,
-              diapason: [0, 2]
+              diapason: [0, 2],
             },
             patronymic: {
               type: 'string',
@@ -178,7 +282,7 @@ module.exports = { routes: <IRoutes> {
               type: 'string',
               required: true,
               test: /^[a-zA-Z0-9]{3,25}$/,
-              oneOf: ['login', 'phone', 'email'],
+              oneOf: ['login'],//['login', 'phone', 'email'],
               maxLength: 25,
               minLength: 3
             },
@@ -186,14 +290,14 @@ module.exports = { routes: <IRoutes> {
               type: 'string',
               required: true,
               test: /^\d+$/,
-              oneOf: ['login', 'phone', 'email'],
+              oneOf: ['login'], //['login', 'phone', 'email'],
               minLength: 6,
             },
             email: {
               type: 'string',
               required: true,
               test: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              oneOf: ['login', 'phone', 'email']
+              oneOf: ['login'] //['login', 'phone', 'email'],
             },
             client_secret: {
               type: 'string',

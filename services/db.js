@@ -30,5 +30,20 @@ module.exports.query = function(query, params, callback) {
   });
 };
 
+module.exports.selectObject = (fields, from, order, limit = false) => {
+  return {
+    fields: fields,
+    from: from,
+    where: [],
+    order: order || "",
+    limit: limit
+  };
+};
+
+module.exports.selectString = (queryObject) => {
+  return 'select '+ queryObject.fields.join(',') +' from ' + queryObject.from.join(',')
+    + ' where ' + queryObject.where.join(' ') + ' ' + queryObject.order + (queryObject.limit ? "limit ?, ?" : "");
+};
+
 
 module.exports.pool = pool;

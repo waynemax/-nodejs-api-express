@@ -159,26 +159,32 @@ class Auth extends (require('../../BaseMethod').BaseMethod) {
           });
         });
       },
-      removeAll: (params = {access_token: ''}, callback) => {
-        const ip = _this.req.headers['x-forwarded-for'] || _this.req.connection.remoteAddress;
-        const relevance = this.storage(_this).relevance(params, relevanceResponse => {
+      removeAll: (params = {access_token: '', exclusion: false}, callback) => {
+        this.storage(_this).relevance(params, relevanceResponse => {
           if (!relevanceResponse.status) return this.error(
             ERRORS.PERMISSION_DENIED.code,
             ERRORS.PERMISSION_DENIED.message
           );
 
-          const owner_id = relevanceResponse.response.owner_id;
-          _this.query("delete from tokens where ip = ? && finger_hash = ? && owner_id = ?;", [
-            ip, _this.req.fingerprint.hash, owner_id
-          ], (removeAllTokensError, removeAllTokensResponse) => {
-            if (removeAllTokensError) return this.error(
-              ERRORS.UNKNOWN.code,
-              ERRORS.UNKNOWN.message + 'SQL: remove token error'
-            );
+          const queryParams = [];
+            queryParams.push(relevanceResponse.response.owner_id);
 
-            return callback({
-              status: true
-            });
+          let exclusion = '';
+          if (params.exclusion === true) {
+            exclusion = " && `access_token` != ?;";
+            queryParams.push(params.access_token);
+          }
+
+          _this.query("delete from `tokens` where `owner_id` = ?" + exclusion, queryParams,
+            (removeAllTokensError, removeAllTokensResponse) => {
+              if (removeAllTokensError) return this.error(
+                ERRORS.UNKNOWN.code,
+                ERRORS.UNKNOWN.message + 'SQL: remove all tokens error'
+              );
+
+              return callback({
+                status: true
+              });
           });
         });
       },
@@ -272,7 +278,7 @@ class Auth extends (require('../../BaseMethod').BaseMethod) {
             ERRORS.API_CONNECT_ERROR.message
           );
 
-          _this.query("select id, password, salt from users where login = ?", [login], (checkLoginError, checkLoginResponse) => {
+          _this.query("select id, password, salt from users where deactivated = 0 && login = ?", [login], (checkLoginError, checkLoginResponse) => {
             if (checkLoginError) return this.error(
               ERRORS.UNKNOWN.code,
               ERRORS.UNKNOWN.message + 'SQL: Check login'
@@ -280,7 +286,7 @@ class Auth extends (require('../../BaseMethod').BaseMethod) {
 
             if (checkLoginResponse.rows.length < 1) return this.error(
               ERRORS.PERMISSION_DENIED.code,
-              ERRORS.PERMISSION_DENIED.message
+              ERRORS.PERMISSION_DENIED.message + ' #1 '
             );
 
             const md5 = require('md5');
@@ -289,7 +295,7 @@ class Auth extends (require('../../BaseMethod').BaseMethod) {
 
             if (inDataPassword !== password) return this.error(
               ERRORS.PERMISSION_DENIED.code,
-              ERRORS.PERMISSION_DENIED.message
+              ERRORS.PERMISSION_DENIED.message + ' #2 '
             );
 
             return this.storage(_this).getValidToken({
@@ -311,7 +317,8 @@ class Auth extends (require('../../BaseMethod').BaseMethod) {
           gender = params.gender || 0,
           patronymic = params.patronymic || '',
           salt = rand(6, ["A", "F"], ["0", "9"]),
-          login = params.login.toLowerCase();
+          login = params.login.toLowerCase(),
+          secret_phrase = params.secret_phrase.toLowerCase();
 
         if (isFinite(login[0])) return this.error(
           ERRORS.REG_EXP_ERROR.code,
@@ -338,8 +345,8 @@ class Auth extends (require('../../BaseMethod').BaseMethod) {
               ERRORS.API_CONNECT_ERROR.message
             );
 
-            _this.query("INSERT INTO `users` (`id`, `first_name`, `last_name`, `patronymic`, `login`, `phone`, `email`, `password`, `salt`, `hash`, `deactivated`, `last_seen`, `timezone`, `verified`, `balance`, `reg_date`, `full_name`, `photo`, `gender`) VALUES (NULL, ?, ?, ?, ?, '', '', ?, ?, ?, '0', '"+(Math.round((+new Date())/1000))+"', '0', '0', '0', '"+(Math.round((+new Date())/1000))+"', ?, '', ?);", [
-              first_name, last_name, patronymic, login, password, salt, rand(6, ["A", "F"], ["0", "9"]), `${first_name + ' ' + last_name}`, gender,
+            _this.query("INSERT INTO `users` (`id`, `first_name`, `last_name`, `patronymic`, `login`, `phone`, `email`, `password`, `salt`, `hash`, `deactivated`, `last_seen`, `timezone`, `verified`, `balance`, `reg_date`, `full_name`, `photo`, `gender`, `is_closed`, `secret_phrase`) VALUES (NULL, ?, ?, ?, ?, '', '', ?, ?, ?, '0', '"+(Math.round((+new Date())/1000))+"', '0', '0', '0', '"+(Math.round((+new Date())/1000))+"', ?, '', ?, '0', ?);", [
+              first_name, last_name, patronymic, login, password, salt, rand(6, ["A", "F"], ["0", "9"]), `${first_name + ' ' + last_name}`, gender, secret_phrase
             ], (q_error, q_response) => {
               if (q_error) return callback({
                 status: false

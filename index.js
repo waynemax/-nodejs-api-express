@@ -93,7 +93,39 @@ const treatment = (req, res) => {
       );
     }
   }
+
+
   const inParams = req.query;
+  const have_auth = routesModule.methods[method].have_auth;
+  let access_token = '';
+  if (have_auth) {
+    if (!(req.headers.hasOwnProperty('authorization') || inParams.hasOwnProperty('access_token'))) {
+      return res.status(401).send(_err(
+        ERRORS.NEED_AUTH.code,
+        ERRORS.NEED_AUTH.message
+      ));
+    }
+
+    if (req.headers.hasOwnProperty('authorization')) {
+      access_token = req.headers.authorization.split(' ')[1];
+      if (typeof access_token !== 'string') {
+        return res.status(401).send(_err(
+          ERRORS.PERMISSION_DENIED.code,
+          ERRORS.PERMISSION_DENIED.message
+        ));
+      }
+    } else if (inParams.hasOwnProperty('access_token')) {
+      access_token = inParams.access_token;
+    }
+
+    if (access_token.length !== 64) {
+      return res.status(401).send(_err(
+        ERRORS.PERMISSION_DENIED.code,
+        ERRORS.PERMISSION_DENIED.message
+      ));
+    }
+  }
+
 
   for (let param in docParams) {
     // treatment required params //
@@ -126,27 +158,53 @@ const treatment = (req, res) => {
     if (docParams[param].type === typeof 1) {
       if (isFinite(inParams[param])) {
         inParams[param] = Number(inParams[param]);
+        if (docParams[param].hasOwnProperty('positive')) {
+          if (docParams[param].positive === true) {
+            if (inParams[param] < 0) {
+              return res.status(OK).send(_err(
+                ERRORS.IS_NOT_POSITIVE_NUMBER.code,
+                ERRORS.IS_NOT_POSITIVE_NUMBER.message,
+              ));
+            }
+          }
+        }
       }
     }
 
     if (['stringArray', 'any'].indexOf(docParams[param].type) === -1 && docParams[param].type !== typeof inParams[param]) {
       return res.status(OK).send(_err(
         ERRORS.PARAM_WRONG_TYPE.code,
-        `param ${param + '(' + typeof inParams[param]}) !== need type ${docParams[param].type}`
+        `param ${param + '(' + typeof inParams[param]}) !== need type ${docParams[param].type} #3`
       ));
     }
 
     if (docParams[param].type === 'stringArray') {
       inParams[param] = safe_tags_replace(inParams[param]);
       const explode = inParams[param].split(',');
+      if (explode.length > 99) return res.status(OK).send(_err(
+        ERRORS.PARAM_WRONG_TYPE.code,
+        ERRORS.PARAM_WRONG_TYPE.message + '#1',
+      ));
+      let fields = [];
+      if (docParams[param].hasOwnProperty('fields')) {
+        fields = docParams[param].fields;
+      }
       explode.forEach((item, key) => {
         if (explode[key].length < 1) {
           return res.status(OK).send(_err(
             ERRORS.PARAM_WRONG_TYPE.code,
-            ERRORS.PARAM_WRONG_TYPE.message,
+            ERRORS.PARAM_WRONG_TYPE.message + '#2',
+          ));
+        }
+        if (fields.length > 0 && fields.indexOf(explode[key]) === -1) {
+          return res.status(OK).send(_err(
+            ERRORS.PARAM_PICK_OF_TEST_FAIL.code,
+            `parameter failed selection test; pick of fields: ` + JSON.stringify(docParams[param].fields)
           ));
         }
       });
+
+      inParams[param] = explode;
     }
 
     if (docParams[param].type === typeof 1 && docParams[param].hasOwnProperty('diapason')) {
@@ -178,7 +236,7 @@ const treatment = (req, res) => {
         }
       }
       if (docParams[param].hasOwnProperty('wcrypted')) {
-        if (inParams[param]) {
+        if (inParams.hasOwnProperty(param)) {
           const {wcrypt_decode} = require('./services/wcrypt');
           inParams[param] = wcrypt_decode(inParams[param]);
         }
@@ -193,11 +251,11 @@ const treatment = (req, res) => {
       }
 
       if (docParams[param].hasOwnProperty('md5')) {
-        if (inParams[param]) {
+        if (inParams.hasOwnProperty(param)) {
           if (inParams[param].length !== 32) {
             return res.status(OK).send(_err(
               ERRORS.NOT_MD5.code,
-              ERRORS.NOT_MD5.message
+              ERRORS.NOT_MD5.message + ' param: '  + param
             ));
           }
         }
@@ -211,7 +269,7 @@ const treatment = (req, res) => {
             inParams[param] = Number(inParams[param]);
           }
         }
-        if (docParams[param].pickOf.indexOf(inParams[param]) < 0) {
+        if (docParams[param].type !== 'stringArray' && docParams[param].pickOf.indexOf(inParams[param]) < 0) {
           return res.status(OK).send(_err(
             ERRORS.PARAM_PICK_OF_TEST_FAIL.code,
             `parameter failed selection test; pick of: ` + JSON.stringify(docParams[param].pickOf)
@@ -226,6 +284,13 @@ const treatment = (req, res) => {
   ];
 
   let middleware = {};
+  if (access_token !== '') {
+    if (routesModule.methods[method].hasOwnProperty('middleware')) {
+      routesModule.methods[method].middleware.push('auth/1.1');
+    } else {
+      routesModule.methods[method]['middleware'] = ['auth/1.1'];
+    }
+  }
   if (routesModule.methods[method].hasOwnProperty('middleware')) {
     const mdw = routesModule.methods[method].middleware;
     if (typeof mdw === typeof []) {
