@@ -1,3 +1,4 @@
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
@@ -86,6 +87,21 @@ CREATE TABLE `users` (
   `secret_phrase` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vk_users`
+--
+
+CREATE TABLE `vk_users` (
+  `id` int(11) NOT NULL,
+  `vk_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `app_id` int(11) NOT NULL,
+  `create_time` int(11) NOT NULL,
+  `disabled` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --
 -- Indexes for dumped tables
 --
@@ -116,6 +132,13 @@ ALTER TABLE `users`
   ADD KEY `full_name` (`full_name`);
 
 --
+-- Indexes for table `vk_users`
+--
+ALTER TABLE `vk_users`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vk_id` (`vk_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -141,4 +164,10 @@ ALTER TABLE `tokens`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vk_users`
+--
+ALTER TABLE `vk_users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;

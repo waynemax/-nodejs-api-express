@@ -157,6 +157,30 @@ module.exports = { routes: <IRoutes> {
         },
       }
     },
+    vk: <IModule> {
+      versions: [1.1],
+      methods: {
+        send: <IMethod> {
+          description: undefined,
+          have_auth: false,
+          middleware: ['callback/1.1'],
+          params: <IParams> {
+            secret_key: {
+              required: true,
+              type: 'string'
+            },
+            message: {
+              required: true,
+              type: 'string'
+            },
+            vk_id: {
+              required: true,
+              type: 'string'
+            }
+          }
+        }
+      }
+    },
     account: <IModule> {
       versions: [1.1],
       methods: {

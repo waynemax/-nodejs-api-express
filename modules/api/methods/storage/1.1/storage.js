@@ -4,8 +4,9 @@ class Storage extends (require('../../BaseMethod').BaseMethod) {
   }
 
   getByKey(request_key, callback) {
+    console.log(5, request_key[0]);
     this.db.query("select * from storage where `request_key` = ? ORDER BY rand() limit 0,1",
-      [request_key.toLowerCase()], (q_error, q_response) => {
+      [request_key[0].toLowerCase()], (q_error, q_response) => {
         if (q_error) {
           return callback({ status: false })
         } else if (q_response.rows.length < 1) {

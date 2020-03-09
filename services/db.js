@@ -13,11 +13,8 @@ const pool = mysql.createPool({
 
 module.exports.query = function(query, params, callback) {
   pool.getConnection(function(err, connection) {
-    if (err) {
-      console.error('errdb:', connection);
-      //connection.release();
-      throw err;
-    }
+    if (err) throw err;
+
     connection.query(query, params, function(err, rows) {
       connection.release();
       if (!err) {

@@ -1,4 +1,4 @@
-require('events').EventEmitter.defaultMaxListeners = 100;
+require('events').EventEmitter.defaultMaxListeners = 50;
 require(__dirname + '/services/mc.js');
 
 const express = require('express');
@@ -15,7 +15,6 @@ const OK = 200;
 const FAIL = 500;
 const PATH_SEPARATOR = '/';
 const ROUTE_SEPARATOR = '.';
-
 
 app.use(Fingerprint({
   parameters:[
@@ -41,9 +40,13 @@ app.all(PATH_SEPARATOR, (req, res) => {
   res.status(200).end('OK');
 });
 
+setInterval(() => {
+  console.log('mem', process.memoryUsage());
+}, 3000)
+
 const treatment = (req, res) => {
   if (routes.allVersions.indexOf(parseFloat(req.params.v)) < 0) {
-    return res.status(OK).send(
+    return res.status(200).send(
       _err(ERRORS.VERSION_NOT_EXIST.code, ERRORS.VERSION_NOT_EXIST.message)
     );
   }
@@ -55,7 +58,7 @@ const treatment = (req, res) => {
   const [module, method] = req.params.methodName.split(ROUTE_SEPARATOR);
 
   if (Object.keys(routes.modules).indexOf(module) < 0) {
-    return res.status(OK).send(
+    return res.status(200).send(
       _err(ERRORS.MODULE_NOT_EXIST.code, ERRORS.MODULE_NOT_EXIST.message)
     );
   }
@@ -63,13 +66,13 @@ const treatment = (req, res) => {
   const routesModule = routes.modules[module];
 
   if (Object.keys(routesModule.methods).indexOf(method) < 0) {
-    return res.status(OK).send(
+    return res.status(200).send(
       _err(ERRORS.METHOD_NOT_EXIST.code, ERRORS.MODULE_NOT_EXIST.message)
     );
   }
 
   if (routesModule.versions.indexOf(parseFloat(req.params.v)) < 0) {
-    return res.status(OK).send(
+    return res.status(200).send(
       _err(ERRORS.VERSION_NOT_EXIST.code, ERRORS.VERSION_NOT_EXIST.message)
     );
   }
@@ -77,7 +80,7 @@ const treatment = (req, res) => {
   const PATH = __dirname + config.PATH_TO_METHODS + module + PATH_SEPARATOR;
   const moduleExist = fs.statSync(PATH + req.params.v);
   if (!moduleExist) {
-    return res.status(OK).send(
+    return res.status(200).send(
       _err(ERRORS.VERSION_NOT_EXIST.code, ERRORS.VERSION_NOT_EXIST.message)
     );
   }
@@ -85,7 +88,7 @@ const treatment = (req, res) => {
   const docParams = routesModule.methods[method].params;
   if (routesModule.methods[method].hasOwnProperty('only')) {
     if (routesModule.methods[method].only !== req.method) {
-      return res.status(OK).send(
+      return res.status(200).send(
         _err(
           ERRORS.ONLY_METHOD.code,
           `Only ${routesModule.methods[method].only} requests are supported`
@@ -133,7 +136,7 @@ const treatment = (req, res) => {
     if (docParams[param].required === true) {
       if (!docParams[param].hasOwnProperty('oneOf')) {
         if (!inParams.hasOwnProperty(param)) {
-          return res.status(OK).send(
+          return res.status(200).send(
             _err(ERRORS.REQUIRED_PARAM_NOT_FOUND.code, 'Required param not found: ' + param)
           );
         }
@@ -146,7 +149,7 @@ const treatment = (req, res) => {
           if (inParams.hasOwnProperty(oneOfItem)) oneOfStatus = true;
         });
         if (!inParams.hasOwnProperty(param) && !oneOfStatus) {
-          return res.status(OK).send(
+          return res.status(200).send(
             _err(ERRORS.REQUIRED_PARAM_NOT_FOUND.code, 'Required param not found: [oneOf] ' + param + '...')
           );
         }
@@ -161,7 +164,7 @@ const treatment = (req, res) => {
         if (docParams[param].hasOwnProperty('positive')) {
           if (docParams[param].positive === true) {
             if (inParams[param] < 0) {
-              return res.status(OK).send(_err(
+              return res.status(200).send(_err(
                 ERRORS.IS_NOT_POSITIVE_NUMBER.code,
                 ERRORS.IS_NOT_POSITIVE_NUMBER.message,
               ));
@@ -172,7 +175,7 @@ const treatment = (req, res) => {
     }
 
     if (['stringArray', 'any'].indexOf(docParams[param].type) === -1 && docParams[param].type !== typeof inParams[param]) {
-      return res.status(OK).send(_err(
+      return res.status(200).send(_err(
         ERRORS.PARAM_WRONG_TYPE.code,
         `param ${param + '(' + typeof inParams[param]}) !== need type ${docParams[param].type} #3`
       ));
@@ -181,7 +184,7 @@ const treatment = (req, res) => {
     if (docParams[param].type === 'stringArray') {
       inParams[param] = safe_tags_replace(inParams[param]);
       const explode = inParams[param].split(',');
-      if (explode.length > 99) return res.status(OK).send(_err(
+      if (explode.length > 99) return res.status(200).send(_err(
         ERRORS.PARAM_WRONG_TYPE.code,
         ERRORS.PARAM_WRONG_TYPE.message + '#1',
       ));
@@ -191,13 +194,13 @@ const treatment = (req, res) => {
       }
       explode.forEach((item, key) => {
         if (explode[key].length < 1) {
-          return res.status(OK).send(_err(
+          return res.status(200).send(_err(
             ERRORS.PARAM_WRONG_TYPE.code,
             ERRORS.PARAM_WRONG_TYPE.message + '#2',
           ));
         }
         if (fields.length > 0 && fields.indexOf(explode[key]) === -1) {
-          return res.status(OK).send(_err(
+          return res.status(200).send(_err(
             ERRORS.PARAM_PICK_OF_TEST_FAIL.code,
             `parameter failed selection test; pick of fields: ` + JSON.stringify(docParams[param].fields)
           ));
@@ -210,7 +213,7 @@ const treatment = (req, res) => {
     if (docParams[param].type === typeof 1 && docParams[param].hasOwnProperty('diapason')) {
       const diapason = docParams[param].diapason;
       if ((inParams[param] < diapason[0]) || (inParams[param] > diapason[1])) {
-        return res.status(OK).send(_err(
+        return res.status(200).send(_err(
           ERRORS.OUT_OF_DIAPASON.code,
           `param ${param} out of diapason`
         ));
@@ -221,7 +224,7 @@ const treatment = (req, res) => {
       inParams[param] = safe_tags_replace(inParams[param]);
       if (docParams[param].hasOwnProperty('minLength')) {
         if (inParams[param].length < docParams[param].minLength) {
-          return res.status(OK).send(_err(
+          return res.status(200).send(_err(
             ERRORS.PARAM_TOO_SHORT.code,
             `param ${param} must be longer than ${docParams[param].minLength} characters`
           ));
@@ -229,7 +232,7 @@ const treatment = (req, res) => {
       }
       if (docParams[param].hasOwnProperty('maxLength')) {
         if (inParams[param].length > docParams[param].maxLength) {
-          return res.status(OK).send(_err(
+          return res.status(200).send(_err(
             ERRORS.PARAM_TOO_LONG.code,
             `param ${param} must be shorter than ${docParams[param].maxLength} characters`
           ));
@@ -243,7 +246,7 @@ const treatment = (req, res) => {
       }
       if (docParams[param].hasOwnProperty('test')) {
         if (!docParams[param].test.test(inParams[param])) {
-          return res.status(OK).send(_err(
+          return res.status(200).send(_err(
             ERRORS.REG_EXP_ERROR.code,
             `param ${param} failed test`
           ));
@@ -253,7 +256,7 @@ const treatment = (req, res) => {
       if (docParams[param].hasOwnProperty('md5')) {
         if (inParams.hasOwnProperty(param)) {
           if (inParams[param].length !== 32) {
-            return res.status(OK).send(_err(
+            return res.status(200).send(_err(
               ERRORS.NOT_MD5.code,
               ERRORS.NOT_MD5.message + ' param: '  + param
             ));
@@ -270,7 +273,7 @@ const treatment = (req, res) => {
           }
         }
         if (docParams[param].type !== 'stringArray' && docParams[param].pickOf.indexOf(inParams[param]) < 0) {
-          return res.status(OK).send(_err(
+          return res.status(200).send(_err(
             ERRORS.PARAM_PICK_OF_TEST_FAIL.code,
             `parameter failed selection test; pick of: ` + JSON.stringify(docParams[param].pickOf)
           ));
@@ -337,7 +340,7 @@ const getMiddlewareItem = (module, ver) => {
     response: require(PATH + PATH_SEPARATOR + module)[
       module[0].toUpperCase() + module.slice(1)
     ]
-  }
+  };
 };
 
 app.route('/api/:v/:methodName?').all(treatment);

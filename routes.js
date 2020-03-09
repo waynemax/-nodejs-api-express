@@ -112,6 +112,30 @@ module.exports = { routes: {
                     },
                 }
             },
+            vk: {
+                versions: [1.1],
+                methods: {
+                    send: {
+                        description: undefined,
+                        have_auth: false,
+                        middleware: ['callback/1.1'],
+                        params: {
+                            secret_key: {
+                                required: true,
+                                type: 'string'
+                            },
+                            message: {
+                                required: true,
+                                type: 'string'
+                            },
+                            vk_id: {
+                                required: true,
+                                type: 'string'
+                            }
+                        }
+                    }
+                }
+            },
             account: {
                 versions: [1.1],
                 methods: {
